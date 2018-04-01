@@ -2,6 +2,7 @@
 #include "tools.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include <string>
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -90,14 +91,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 0, 0, 0, 0;
-
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
       float rho = measurement_pack.raw_measurements_[0];
       float phi = measurement_pack.raw_measurements_[1];
-	  
       ekf_.x_(0) = rho * cos(phi);
       ekf_.x_(1) = rho * sin(phi);
     }
@@ -128,7 +127,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
-
+  if (dt>10) dt = 0;
+//  std::cout<<"dt = " <<dt<<std::endl;
   float dt_2 = dt * dt;
   float dt_3 = dt_2 * dt;
   float dt_4 = dt_3 * dt;
@@ -154,7 +154,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Use the sensor type to perform the update step.
      * Update the state and covariance matrices.
    */
-
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
@@ -162,7 +161,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // Laser updates
     ekf_.Update(measurement_pack.raw_measurements_);
   }
-
   // print the output
   // cout << "x_ = " << ekf_.x_ << endl;
   // cout << "P_ = " << ekf_.P_ << endl;

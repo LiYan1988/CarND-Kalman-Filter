@@ -1,6 +1,6 @@
 #include "kalman_filter.h"
 #include <iostream>
-  
+
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -67,7 +67,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   H_radar_ << 0, 0, 0, 0,
              0, 0, 0, 0,
              0, 0, 0, 0;
-  
+
   if (fabs(c1) >= 0.0001)
   {
   H_radar_ << px/c1, py/c1, 0, 0,
@@ -82,38 +82,38 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
       rho_dot = (x_(0) * x_(2) + x_(1) * x_(3)) / rho;
     else
       rho_dot = 0;
-  
+
     while(phi>=pi) phi -= 2*pi;
   while(phi<-pi) phi += 2*pi;
 
     // define predicted position and speed
     VectorXd h = VectorXd(3);
     h << rho, phi, rho_dot;
-	
+
 	// VectorXd q = h - H_radar_ * x_;
 	// std::cout<<"q = " <<q<<std::endl;
-			  
+
 VectorXd q = z;
     while(q(1)>=pi) q(1) -= 2*pi;
   while(q(1)<-pi) q(1) += 2*pi;
   VectorXd y = q - h;
   MatrixXd S = H_radar_ * P_ * H_radar_.transpose() + R_radar_;
   MatrixXd K = P_ * H_radar_.transpose() * S.inverse();
-  
+
     while(y(1)>=pi) y(1) -= 2*pi;
   while(y(1)<-pi) y(1) += 2*pi;
-  
-  std::cout<<"H = \n" << H_radar_<<std::endl;
-  std::cout<<"S = \n"<<S<<std::endl;
-  std::cout<<"S inv = \n" << S.inverse()<<std::endl;
-  std::cout<<"K = \n"<<K<<std::endl;
-  std::cout<<"x update = \n"<<K * y<<std::endl;
-	std::cout<<"================================================================== \n"<<std::endl;
+
+//  std::cout<<"H = \n" << H_radar_<<std::endl;
+//  std::cout<<"S = \n"<<S<<std::endl;
+//  std::cout<<"S inv = \n" << S.inverse()<<std::endl;
+//  std::cout<<"K = \n"<<K<<std::endl;
+//  std::cout<<"x update = \n"<<K * y<<std::endl;
+//	std::cout<<"================================================================== \n"<<std::endl;
 
   // std::cout<<"y="<<y<<std::endl;
   x_ = x_ + (K * y);
   P_ = P_ - K * H_radar_ * P_;
-  
+
   }
 
 }
